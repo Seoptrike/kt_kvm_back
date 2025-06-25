@@ -1,0 +1,25 @@
+name: Deploy to 195 server
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 푸시될 때 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up SSH key
+      uses: webfactory/ssh-agent@v0.5.4
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy to server 195
+      run: |
+        ssh -o StrictHostKeyChecking=no root@192.168.0.195 "mkdir -p /root/app"
+        scp -o StrictHostKeyChecking=no -r ./build/* root@192.168.0.195:/root/app/
+        ssh -o StrictHostKeyChecking=no root@192.168.0.195 "sudo systemctl restart ktapp.service"
